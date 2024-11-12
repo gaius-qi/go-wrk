@@ -3,18 +3,25 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 )
 
-func StartClient(url_, heads, requestBody string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
+func StartClient(url_, heads, requestBody string, proxy string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
 	defer waitGroup.Done()
 
 	var tr *http.Transport
+	proxyURL, err := url.Parse(proxy)
+	if err != nil {
+		fmt.Printf("Error parsing proxy URL: %v\n", err)
+		os.Exit(1)
+	}
 
 	u, err := url.Parse(url_)
 
@@ -47,9 +54,9 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 			tlsConfig.BuildNameToCertificate()
 		}
 
-		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka}
+		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka, Proxy: http.ProxyURL(proxyURL)}
 	} else {
-		tr = &http.Transport{DisableKeepAlives: dka}
+		tr = &http.Transport{DisableKeepAlives: dka, Proxy: http.ProxyURL(proxyURL)}
 	}
 
 	timer := NewTimer()

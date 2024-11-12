@@ -19,6 +19,7 @@ var (
 	method            = flag.String("m", "GET", "the http request method")
 	requestBody       = flag.String("b", "", "the http request body")
 	requestBodyFile   = flag.String("p", "", "the http request body data file")
+	proxy             = flag.String("x", "", "the http proxy address")
 	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
 	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
 	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
