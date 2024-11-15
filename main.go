@@ -34,6 +34,7 @@ var (
 	insecure          = flag.Bool("i", false, "TLS checks are disabled")
 	respContains      = flag.String("s", "", "if specified, it counts how often the searched string s is contained in the responses")
 	readAll           = flag.Bool("r", false, "in the case of having stream or file in the response,\n it reads all response body to calculate the response size")
+	random            = flag.Bool("random", false, "if specified, it will add random query string to the request url")
 )
 
 func init() {

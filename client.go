@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 func StartClient(url_, heads, requestBody string, proxy string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
@@ -64,8 +66,15 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 	hdrs, _ := buildHeaders(heads)
 
 	for {
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		if *random {
+			q := u.Query()
+			q.Set("random", fmt.Sprint(r.Int()))
+			u.RawQuery = q.Encode()
+		}
+
 		requestBodyReader := strings.NewReader(requestBody)
-		req, _ := http.NewRequest(meth, url_, requestBodyReader)
+		req, _ := http.NewRequest(meth, u.String(), requestBodyReader)
 
 		for key, vals := range hdrs {
 			for _, val := range vals {
