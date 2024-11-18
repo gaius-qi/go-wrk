@@ -19,12 +19,6 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 	defer waitGroup.Done()
 
 	var tr *http.Transport
-	proxyURL, err := url.Parse(proxy)
-	if err != nil {
-		fmt.Printf("Error parsing proxy URL: %v\n", err)
-		os.Exit(1)
-	}
-
 	u, err := url.Parse(url_)
 
 	if err == nil && u.Scheme == "https" {
@@ -56,9 +50,20 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 			tlsConfig.BuildNameToCertificate()
 		}
 
-		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka, Proxy: http.ProxyURL(proxyURL)}
+		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka}
 	} else {
-		tr = &http.Transport{DisableKeepAlives: dka, Proxy: http.ProxyURL(proxyURL)}
+		tr = &http.Transport{DisableKeepAlives: dka}
+	}
+
+	var proxyURL *url.URL
+	if proxy != "" {
+		proxyURL, err = url.Parse(proxy)
+		if err != nil {
+			fmt.Printf("Error parsing proxy URL: %v\n", err)
+			os.Exit(1)
+		}
+
+		tr.Proxy = http.ProxyURL(proxyURL)
 	}
 
 	timer := NewTimer()
