@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -35,7 +35,7 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 			}
 
 			// Load CA cert
-			caCert, err := ioutil.ReadFile(*caFile)
+			caCert, err := os.ReadFile(*caFile)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -47,7 +47,6 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 				Certificates: []tls.Certificate{cert},
 				RootCAs:      caCertPool,
 			}
-			tlsConfig.BuildNameToCertificate()
 		}
 
 		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka}
@@ -90,6 +89,7 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 		timer.Reset()
 
 		resp, err := tr.RoundTrip(req)
+		defer resp.Body.Close()
 
 		respObj := &Response{}
 
@@ -97,22 +97,20 @@ func StartClient(url_, heads, requestBody string, proxy string, meth string, dka
 			respObj.Error = true
 		} else {
 			if resp.ContentLength < 0 { // -1 if the length is unknown
-				data, err := ioutil.ReadAll(resp.Body)
+				data, err := io.ReadAll(resp.Body)
 				if err == nil {
 					respObj.Size = int64(len(data))
 				}
 			} else {
 				respObj.Size = resp.ContentLength
 				if *respContains != "" {
-					data, err := ioutil.ReadAll(resp.Body)
+					data, err := io.ReadAll(resp.Body)
 					if err == nil {
 						respObj.Body = string(data)
 					}
 				}
 			}
 			respObj.StatusCode = resp.StatusCode
-
-			resp.Body.Close()
 		}
 
 		respObj.Duration = timer.Duration()
