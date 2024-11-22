@@ -11,13 +11,10 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
-func StartClient(url_, heads, requestBody string, proxy string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
-	defer waitGroup.Done()
-
+func StartClient(url_, heads, requestBody string, proxy string, meth string, dka bool, responseChan chan *Response, tc int) {
 	var tr *http.Transport
 	u, err := url.Parse(url_)
 

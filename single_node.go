@@ -13,20 +13,21 @@ func SingleNode(toCall string) []byte {
 	wg := &sync.WaitGroup{}
 
 	for i := 0; i < *numConnections; i++ {
-		go StartClient(
-			toCall,
-			*headers,
-			*requestBody,
-			*proxy,
-			*method,
-			*disableKeepAlives,
-			responseChannel,
-			wg,
-			*totalCalls,
-		)
 		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			StartClient(
+				toCall,
+				*headers,
+				*requestBody,
+				*proxy,
+				*method,
+				*disableKeepAlives,
+				responseChannel,
+				*totalCalls,
+			)
+		}()
 	}
-
 	wg.Wait()
 
 	result := CalcStats(
